@@ -20,14 +20,7 @@
   returns the file descriptor for the upstream pipe.
   =========================*/
 int server_handshake(int *to_client) {
-  if (mkfifo("known", 0666) == -1){
-    printf("Error making known pipe\n");
-    exit(1);
-  }
-  if (errno){
-    printf("Error #%d: %s",errno,strerror(errno));
-    exit(1);
-  }
+  mkfifo("known", 0666);
   // You need to have both ends open before you can proceed in your code.
   int up = open("known",O_RDONLY);
 
@@ -36,6 +29,7 @@ int server_handshake(int *to_client) {
   printf("Server recieved the client's message, which is: %s\n",client_message);
 
   int down = open(client_message, O_WRONLY);
+  *to_client = down;
 
   write(down,"I have gotten your response",sizeof("I have gotten your response"));
 
@@ -47,7 +41,9 @@ int server_handshake(int *to_client) {
 
   remove("known");
 
-  return 0;
+
+
+  return up;
 }
 
 
@@ -61,16 +57,11 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  if (mkfifo("private", 0666) == -1){
-    printf("Error making pipe");
-  }
-  if (errno){
-    printf("Error #%d: %s",errno,strerror(errno));
-    exit(1);
-  }
-
+  mkfifo("private", 0666);
   int up = open("known", O_WRONLY);
   write(up,"private",sizeof("private"));
+
+  *to_server = up;
 
   int down = open("private", O_RDONLY);
   char response[100];
@@ -84,5 +75,5 @@ int client_handshake(int *to_server) {
 
   remove("private");
 
-  return 0;
+  return down;
 }
