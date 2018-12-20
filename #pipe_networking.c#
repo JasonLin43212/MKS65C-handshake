@@ -12,9 +12,10 @@
 #include "pipe_networking.h"
 
 static void sighandler(int signo) {
+  printf("signo is %d",signo);
   if (signo == SIGINT){
+    printf("removing stuff");
     remove("known");
-    exit(1);
   }
 }
 
